@@ -30,7 +30,7 @@ class Lexer(metaclass=LexerBase):
 
     def __iter__(self):
         while not self.done():
-            yield self.token()
+            yield self.next_token()
 
     def consume(self, token):
         self.input_pos += len(token)
@@ -42,7 +42,8 @@ class Lexer(metaclass=LexerBase):
         else:
             self.line_pos += len(token.value)
 
-    def token(self):
+    def next_token(self):
+
         matches = []
         for name, token_defn in self.tokens.items():
             match = token_defn.regexp.match(self.input_text, self.input_pos)
@@ -62,6 +63,12 @@ class Lexer(metaclass=LexerBase):
             return token
         else:
             raise Exception('No token definition matched: "{}"'.format(self.input_text[self.input_pos]))
+
+    def token(self):
+        if self.done():
+            return None
+        else:
+            return self.next_token()
 
     def done(self):
         return self.input_pos >= len(self.input_text)
