@@ -25,8 +25,8 @@ class Lexer(metaclass=LexerBase):
     def __init__(self, input_text):
         self.input_text = input_text
         self.input_pos = 0
-        self.line_num = 1
-        self.line_pos = 1
+        self.line_num = 0
+        self.line_pos = 0
 
     def __iter__(self):
         while not self.done():
@@ -38,7 +38,7 @@ class Lexer(metaclass=LexerBase):
 
         newline_idx = token.value.rfind('\n')
         if newline_idx >= 0:
-            self.line_pos = len(token.value) - newline_idx
+            self.line_pos = len(token.value) - newline_idx - 1
         else:
             self.line_pos += len(token.value)
 
