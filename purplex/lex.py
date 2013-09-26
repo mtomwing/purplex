@@ -22,6 +22,8 @@ class LexerBase(type):
 
 
 class Lexer(metaclass=LexerBase):
+    IGNORE = ''
+
     def __init__(self, input_text):
         self.input_text = input_text
         self.input_pos = 0
@@ -43,6 +45,8 @@ class Lexer(metaclass=LexerBase):
             self.line_pos += len(token.value)
 
     def next_token(self):
+        while self.input_text[self.input_pos] in self.IGNORE:
+            self.input_pos += 1
 
         matches = []
         for name, token_defn in self.tokens.items():
