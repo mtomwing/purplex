@@ -2,8 +2,9 @@ import re
 
 
 class TokenDef(object):
-    def __init__(self, regexp):
+    def __init__(self, regexp, ignore=False):
         self.regexp = re.compile(regexp)
+        self.ignore = ignore
 
 
 class Token(object):

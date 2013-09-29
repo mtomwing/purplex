@@ -64,7 +64,11 @@ class Lexer(metaclass=LexerBase):
 
             if hasattr(self, 'on_{}'.format(token.name)):
                 getattr(self, 'on_{}'.format(token.name))(token)
-            return token
+
+            if token.defn.ignore:
+                return self.next_token()
+            else:
+                return token
         else:
             raise Exception('No token definition matched: "{}"'.format(self.input_text[self.input_pos]))
 
