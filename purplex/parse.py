@@ -7,7 +7,9 @@ logger = logging.getLogger(__name__)
 
 def attach(production):
     def wrapper(func):
-        func._production = production
+        if not hasattr(func, '_productions'):
+            func._productions = []
+        func._productions.append(production)
         return func
     return wrapper
 
@@ -39,8 +41,9 @@ class ParserBase(type):
         productions = {}
 
         for name, attr in dct.items():
-            if hasattr(attr, '_production'):
-                productions[attr._production] = attr
+            if hasattr(attr, '_productions'):
+                for production in attr._productions:
+                    productions[production] = attr
 
         dct['_productions'] = productions
         return type.__new__(cls, name, bases, dct)
