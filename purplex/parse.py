@@ -2,8 +2,12 @@ from ply import yacc
 
 
 class Node(object):
-    def __init__(self, *args):
-        pass
+    def __init__(self, parser, *args):
+        self.parser = parser
+        self.children = args
+
+    def __repr__(self):
+        return '{}{}'.format(self.__class__.__name__, repr(self.children))
 
 
 class MagicParser(object):
