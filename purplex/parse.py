@@ -1,3 +1,4 @@
+import functools
 import logging
 
 from ply import yacc
@@ -78,7 +79,16 @@ class Parser(metaclass=ParserBase):
 
     def parse(self, input_stream):
         lexer = self.LEXER(input_stream)
-        return self._parser.parse(lexer=lexer)
+
+        def tokens():
+            for token in lexer:
+                yield token
+            yield None
+
+        tokens_gen = tokens()
+
+        return self._parser.parse(lexer=lexer,
+                                  tokenfunc=functools.partial(next, tokens_gen))
 
     # Implement these if you want:
 
