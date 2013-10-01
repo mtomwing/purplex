@@ -65,7 +65,8 @@ class Parser(metaclass=ParserBase):
 
     def _build(self, start, debug):
         magic = MagicParser()
-        magic.tokens = list(self.LEXER.tokens.keys())
+        magic.tokens = [name for name, tokendef in self.LEXER.tokens.items()
+                        if not tokendef.ignore]
 
         for production, node_cls in self._productions.items():
             magic.add(self, production, node_cls)
