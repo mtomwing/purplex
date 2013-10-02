@@ -52,6 +52,7 @@ class ParserBase(type):
 
 class Parser(metaclass=ParserBase):
     LEXER = None
+    PRECEDENCE = []
 
     @classmethod
     def attach(cls, production):
@@ -67,6 +68,8 @@ class Parser(metaclass=ParserBase):
         magic = MagicParser()
         magic.tokens = [name for name, tokendef in self.LEXER.tokens.items()
                         if not tokendef.ignore]
+        if self.PRECEDENCE:
+            magic.precedence = self.PRECEDENCE
 
         for production, node_cls in self._productions.items():
             magic.add(self, production, node_cls)
