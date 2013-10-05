@@ -3,8 +3,6 @@ import logging
 
 from ply import yacc
 
-logger = logging.getLogger(__name__)
-
 
 def attach(production):
     def wrapper(func):
@@ -41,7 +39,7 @@ class ParserBase(type):
     def __new__(cls, name, bases, dct):
         productions = {}
 
-        for name, attr in dct.items():
+        for _, attr in dct.items():
             if hasattr(attr, '_productions'):
                 for production in attr._productions:
                     productions[production] = attr
@@ -75,10 +73,17 @@ class Parser(metaclass=ParserBase):
             magic.add(self, production, node_cls)
         setattr(magic, 'p_error', self.on_error)
 
-        yacc_logger = logger if debug else yacc.NullLogger()
+        if debug:
+            yacc_logger = logging.getLogger('{}.{}'.format(self.__module__, self.__class__.__name__))
+            handler = logging.StreamHandler()
+            formatter = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
+            handler.setFormatter(formatter)
+            yacc_logger.addHandler(handler)
+        else:
+            yacc_logger = yacc.NullLogger()
 
         return yacc.yacc(module=magic, start=start,
-                         write_tables=False, debug=False,
+                         write_tables=False, debug=debug,
                          debuglog=yacc_logger, errorlog=yacc_logger)
 
     def parse(self, input_stream):
