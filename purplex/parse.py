@@ -73,18 +73,22 @@ class Parser(metaclass=ParserBase):
             magic.add(self, production, node_cls)
         setattr(magic, 'p_error', self.on_error)
 
+        error_logger = logging.getLogger('{}.{}'.format(self.__module__, self.__class__.__name__))
+        handler = logging.StreamHandler()
+        formatter = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
+        handler.setFormatter(formatter)
+        error_logger.addHandler(handler)
+
+        debug_logger = error_logger if debug else yacc.NullLogger()
+
         if debug:
-            yacc_logger = logging.getLogger('{}.{}'.format(self.__module__, self.__class__.__name__))
-            handler = logging.StreamHandler()
-            formatter = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
-            handler.setFormatter(formatter)
-            yacc_logger.addHandler(handler)
+            error_logger.setLevel(logging.DEBUG)
         else:
-            yacc_logger = yacc.NullLogger()
+            error_logger.setLevel(logging.ERROR)
 
         return yacc.yacc(module=magic, start=start,
                          write_tables=False, debug=debug,
-                         debuglog=yacc_logger, errorlog=yacc_logger)
+                         debuglog=debug_logger, errorlog=error_logger)
 
     def parse(self, input_stream):
         lexer = self.LEXER(input_stream)
