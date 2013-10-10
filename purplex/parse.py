@@ -84,8 +84,10 @@ class Parser(metaclass=ParserBase):
 
         if debug:
             error_logger.setLevel(logging.DEBUG)
+            self.debug = error_logger
         else:
             error_logger.setLevel(logging.ERROR)
+            self.debug = False
 
         return yacc.yacc(module=magic, start=start,
                          write_tables=False, debug=debug,
@@ -102,7 +104,8 @@ class Parser(metaclass=ParserBase):
         tokens_gen = tokens()
 
         return self._parser.parse(lexer=self.lexer,
-                                  tokenfunc=functools.partial(next, tokens_gen))
+                                  tokenfunc=functools.partial(next, tokens_gen),
+                                  debug=self.debug)
 
     # Implement these if you want:
 
