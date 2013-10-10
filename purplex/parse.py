@@ -61,6 +61,7 @@ class Parser(metaclass=ParserBase):
 
     def __init__(self, start=None, debug=False):
         self._parser = self._build(start, debug)
+        self._lexer = None
 
     def _build(self, start, debug):
         magic = MagicParser()
@@ -91,16 +92,16 @@ class Parser(metaclass=ParserBase):
                          debuglog=debug_logger, errorlog=error_logger)
 
     def parse(self, input_stream):
-        lexer = self.LEXER(input_stream)
+        self.lexer = self.LEXER(input_stream)
 
         def tokens():
-            for token in lexer:
+            for token in self.lexer:
                 yield token
             yield None
 
         tokens_gen = tokens()
 
-        return self._parser.parse(lexer=lexer,
+        return self._parser.parse(lexer=self.lexer,
                                   tokenfunc=functools.partial(next, tokens_gen))
 
     # Implement these if you want:
