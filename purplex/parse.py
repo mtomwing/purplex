@@ -13,13 +13,19 @@ def attach(production):
     return wrapper
 
 
-class Node(object):
-    def __init__(self, parser, *args):
-        self.parser = parser
-        self.children = args
+def attach_list(nonterminal, singular, epsilon=False):
+    def wrapper(func):
+        productions = [
+            '{} : {} {}'.format(nonterminal, nonterminal, singular),
+            '{} : {}'.format(nonterminal, singular),
+        ]
+        if epsilon:
+            productions.append('{} : '.format(nonterminal))
 
-    def __repr__(self):
-        return '{}{}'.format(self.__class__.__name__, repr(self.children))
+        for production in productions:
+            attach(production)(func)
+        return func
+    return wrapper
 
 
 class MagicParser(object):

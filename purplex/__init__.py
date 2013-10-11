@@ -4,6 +4,9 @@ from .token import Token
 from .token import TokenDef
 
 # Parser Stuff
+from .node import auto_collect
+from .node import ListNode
+from .node import Node
 from .parse import attach
-from .parse import Node
+from .parse import attach_list
 from .parse import Parser
