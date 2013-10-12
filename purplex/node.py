@@ -17,11 +17,14 @@ class ListNode(Node):
 
 def auto_collect(node_cls, children):
     if len(children) > 1:
-        children[0].add(children[1])
+        children[0].add(children[-1])
         return children[0]
     elif len(children) == 1:
-        ret = node_cls()
-        ret.add(children[0])
-        return ret
+        if isinstance(children[0], node_cls):
+            return children[0]
+        else:
+            ret = node_cls()
+            ret.add(children[0])
+            return ret
     else:
         return node_cls()

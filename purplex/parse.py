@@ -29,6 +29,24 @@ def attach_list(nonterminal, singular, single=True, epsilon=False):
     return wrapper
 
 
+def attach_sep_list(nonterminal, singular, separator, epsilon=False):
+    def wrapper(func):
+        inner_nonterminal = '{}_inner'.format(nonterminal)
+        productions = [
+            '{} : {}'.format(nonterminal, inner_nonterminal),
+            '{} : {} {} {}'.format(inner_nonterminal, inner_nonterminal,
+                                   separator, singular),
+            '{} : {}'.format(inner_nonterminal, singular),
+            ]
+        if epsilon:
+            productions.append('{} : '.format(nonterminal))
+
+        for producution in productions:
+            attach(producution)(func)
+        return func
+    return wrapper
+
+
 class MagicParser(object):
     def add(self, parser, production, node_cls):
         def p_something(t):
