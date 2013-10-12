@@ -13,12 +13,13 @@ def attach(production):
     return wrapper
 
 
-def attach_list(nonterminal, singular, epsilon=False):
+def attach_list(nonterminal, singular, single=True, epsilon=False):
     def wrapper(func):
         productions = [
             '{} : {} {}'.format(nonterminal, nonterminal, singular),
-            '{} : {}'.format(nonterminal, singular),
         ]
+        if single:
+            productions.append('{} : {}'.format(nonterminal, singular))
         if epsilon:
             productions.append('{} : '.format(nonterminal))
 
