@@ -11,6 +11,9 @@ class ListNode(Node):
     def __init__(self):
         self.children = []
 
+    def __iter__(self):
+        return iter(self.children)
+
     def add(self, child):
         self.children.append(child)
 
