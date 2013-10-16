@@ -1,13 +1,16 @@
-purplex
-=======
+# purplex
 
 A set of wrappers and other tools that make it easier to work with PLY.
 
   * **Lexer**: a pure-python lexer that can be used as a drop-in replacement with PLY.
   * **Parser**: a wrapper around PLY's yacc parser that provides a more pythonic interface.
 
-Example: Simple Expression Evaluator
--------------
+## Requirements
+
+  * Python 3.2+
+  * ply
+
+## Example: Simple Expression Evaluator
 
 ```python
 from purplex import Lexer, TokenDef
