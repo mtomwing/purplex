@@ -10,6 +10,10 @@ A set of wrappers and other tools that make it easier to work with PLY.
   * Python 3.2+
   * ply 3.4
 
+## Testing
+
+`python3 setup.py test`
+
 ## Installation
 
 `python3 setup.py install`
