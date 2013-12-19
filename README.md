@@ -8,7 +8,11 @@ A set of wrappers and other tools that make it easier to work with PLY.
 ## Requirements
 
   * Python 3.2+
-  * ply
+  * ply 3.4
+
+## Installation
+
+`python3 setup.py install`
 
 ## Example: Simple Expression Evaluator
 
