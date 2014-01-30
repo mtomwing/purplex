@@ -3,7 +3,7 @@ import re
 
 class TokenDef(object):
     def __init__(self, regexp, ignore=False):
-        self.regexp = re.compile(regexp)
+        self.regexp = re.compile(regexp, re.UNICODE)
         self.ignore = ignore
 
 

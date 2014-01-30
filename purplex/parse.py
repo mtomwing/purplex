@@ -69,8 +69,12 @@ class ParserBase(type):
                 for production in attr._productions:
                     productions[production] = attr
 
-        dct['_productions'] = productions
-        return type.__new__(cls, name, bases, dct)
+        ret = type.__new__(cls, name, bases, dct)
+        if not hasattr(ret, '_productions'):
+            ret._productions = {}
+        productions.update(ret._productions)
+        ret._productions = productions
+        return ret
 
 
 class Parser(metaclass=ParserBase):

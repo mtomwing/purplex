@@ -1,10 +1,10 @@
-class Node(object):
-    def __init__(self, parser, *args):
-        self.parser = parser
-        self.children = args
+import abc
 
-    def __repr__(self):
-        return '{}{}'.format(self.__class__.__name__, repr(self.children))
+
+class Node(object, metaclass=abc.ABCMeta):
+    @abc.abstractmethod
+    def pretty(self):
+        return ''
 
 
 class ListNode(Node):
@@ -13,6 +13,9 @@ class ListNode(Node):
 
     def __iter__(self):
         return iter(self.children)
+
+    def __len__(self):
+        return len(self.children)
 
     def add(self, child):
         self.children.append(child)

@@ -10,15 +10,18 @@ class LexerBase(type):
         return collections.OrderedDict()
 
     def __new__(cls, name, bases, dct):
-        new_dct = {}
         tokens = collections.OrderedDict()
         for name, attr in dct.items():
             if isinstance(attr, TokenDef):
+                if attr.regexp.match(''):
+                    raise Exception('token {} matched the empty string'.format(name))
                 tokens[name] = attr
-            else:
-                new_dct[name] = attr
-        new_dct['tokens'] = tokens
-        return type.__new__(cls, name, bases, new_dct)
+                del dct[name]
+        ret = super(LexerBase, cls).__new__(cls, name, bases, dct)
+        if hasattr(ret, 'tokens'):
+            tokens.update(ret.tokens)
+        ret.tokens = tokens
+        return ret
 
 
 class Lexer(metaclass=LexerBase):
@@ -46,6 +49,7 @@ class Lexer(metaclass=LexerBase):
 
     def next_token(self):
         matches = []
+
         for name, token_defn in self.tokens.items():
             match = token_defn.regexp.match(self.input_text, self.input_pos)
             if match:
