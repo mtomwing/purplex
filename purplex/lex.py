@@ -62,6 +62,8 @@ class Lexer(metaclass=LexerBase):
             if hasattr(self, 'on_{}'.format(token.name)):
                 getattr(self, 'on_{}'.format(token.name))(token)
 
+            self.on_token(token)
+
             if token.defn.ignore:
                 return None
             else:
@@ -71,3 +73,8 @@ class Lexer(metaclass=LexerBase):
 
     def done(self):
         return self.input_pos >= len(self.input_text)
+
+    # Override these
+
+    def on_token(self, token):
+        pass
