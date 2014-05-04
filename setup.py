@@ -19,7 +19,7 @@ class PyTest(TestCommand):
 
 
 setup(name='purplex',
-      version='0.1',
+      version='0.1.1',
       description='Pure python lexer implementation.',
       author='Michael Tom-Wing',
       author_email='mtomwing@gmail.com',
