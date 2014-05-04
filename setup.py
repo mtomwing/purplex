@@ -5,10 +5,12 @@ import sys
 
 # from http://pytest.org/latest/goodpractises.html
 class PyTest(TestCommand):
+
     def finalize_options(self):
         TestCommand.finalize_options(self)
         self.test_args = []
         self.test_suite = True
+
     def run_tests(self):
         #import here, cause outside the eggs aren't loaded
         import pytest
@@ -26,5 +28,5 @@ setup(name='purplex',
       license='MIT',
       install_requires=['ply==3.4'],
       tests_require=['pytest'],
-      cmdclass = {'test': PyTest},
+      cmdclass={'test': PyTest},
       zip_safe=False)
