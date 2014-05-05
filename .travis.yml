@@ -1,0 +1,13 @@
+language: python
+python:
+    - '3.2'
+    - '3.3'
+    - '3.4'
+before_install:
+    - export COVERALLS_SERVICE_NAME=travis-pro
+    - export COVERALLS_REPO_TOKEN=GLtDwH5jdp2aUBVyguIiMtQdUvVrOUQcz
+install:
+    - 'pip install -r requirements.txt'
+script:
+    - python setup.py test
+    - coveralls

@@ -53,8 +53,8 @@ class MagicParser(object):
             nargs = len(t.slice)
             t[0] = node_cls(parser, *[t[i] for i in range(1, nargs)])
         func_name = 'p_{}_{}{}'.format(production.split()[0],
-                                        node_cls.__name__,
-                                        abs(hash(production)))
+                                       node_cls.__name__,
+                                       abs(hash(production)))
         p_something.__name__ = func_name
         setattr(self, func_name, p_something)
         getattr(self, func_name).__doc__ = production
@@ -103,7 +103,9 @@ class Parser(metaclass=ParserBase):
             magic.add(self, production, node_cls)
         setattr(magic, 'p_error', self.on_error)
 
-        error_logger = logging.getLogger('{}.{}'.format(self.__module__, self.__class__.__name__))
+        error_logger = logging.getLogger('{}.{}'
+                                         .format(self.__module__,
+                                                 self.__class__.__name__))
         handler = logging.StreamHandler()
         formatter = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
         handler.setFormatter(formatter)
@@ -130,10 +132,10 @@ class Parser(metaclass=ParserBase):
                 yield token
             yield None
 
-        tokens_gen = tokens()
+        token_gen = tokens()
 
         return self._parser.parse(lexer=self.lexer,
-                                  tokenfunc=functools.partial(next, tokens_gen),
+                                  tokenfunc=functools.partial(next, token_gen),
                                   debug=self.debug)
 
     # Implement these if you want:

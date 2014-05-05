@@ -1,0 +1,5 @@
+coveralls==0.4.1
+ply==3.4
+pytest==2.5.2
+pytest-cov==1.6
+pytest-pep8==1.0.6

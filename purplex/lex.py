@@ -14,7 +14,8 @@ class LexerBase(type):
         for name, attr in dct.items():
             if isinstance(attr, TokenDef):
                 if attr.regexp.match(''):
-                    raise Exception('token {} matched the empty string'.format(name))
+                    raise Exception('token {} matched the empty string'
+                                    .format(name))
                 tokens[name] = attr
                 del dct[name]
         ret = super(LexerBase, cls).__new__(cls, name, bases, dct)
@@ -73,7 +74,8 @@ class Lexer(metaclass=LexerBase):
             else:
                 return token
         else:
-            raise Exception('No token definition matched: "{}"'.format(self.input_text[self.input_pos]))
+            raise Exception('No token definition matched: "{}"'
+                            .format(self.input_text[self.input_pos]))
 
     def done(self):
         return self.input_pos >= len(self.input_text)
