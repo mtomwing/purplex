@@ -89,7 +89,7 @@ $ python example.py
 [build-status]: https://travis-ci.org/mtomwing/purplex "Build status"
 [build-status-badge]: https://travis-ci.org/mtomwing/purplex.png?branch=master
 [coverage-status]: https://coveralls.io/r/mtomwing/purplex "Test coverage"
-[coverage-status-badge]: https://coveralls.io/repos/mtomwing/purplex/badge.png
+[coverage-status-badge]: https://coveralls.io/repos/mtomwing/purplex/badge.png?branch=master
 [pypi-version]: https://crate.io/packages/purplex "Latest version hosted on PyPi"
 [pypi-version-badge]: https://pypip.in/v/purplex/badge.png
 [pypi-downloads]: https://crate.io/packages/purplex "Number of downloads from PyPi"
