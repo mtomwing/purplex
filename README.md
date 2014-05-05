@@ -1,4 +1,8 @@
 # purplex
+[![Build Status][build-status-badge]] [build-status]
+[![Coverage Status][coverage-status-badge]] [coverage-status]
+[![PyPi version][pypi-version-badge]] [pypi-version]
+[![PyPi downloads][pypi-downloads-badge]] [pypi-downloads]
 
 A set of wrappers and other tools that make it easier to work with PLY.
 
@@ -81,3 +85,12 @@ if __name__ == '__main__':
 $ python example.py
 10
 ```
+
+[build-status]: https://travis-ci.org/mtomwing/purplex "Build status"
+[build-status-badge]: https://travis-ci.org/mtomwing/purplex.png?branch=master
+[coverage-status]: https://coveralls.io/r/mtomwing/purplex "Test coverage"
+[coverage-status-badge]: https://coveralls.io/repos/mtomwing/purplex/badge.png
+[pypi-version]: https://crate.io/packages/purplex "Latest version hosted on PyPi"
+[pypi-version-badge]: https://pypip.in/v/purplex/badge.png
+[pypi-downloads]: https://crate.io/packages/purplex "Number of downloads from PyPi"
+[pypi-downloads-badge]: https://pypip.in/d/purplex/badge.png
