@@ -13,9 +13,6 @@ class LexerBase(type):
         tokens = collections.OrderedDict()
         for name, attr in dct.items():
             if isinstance(attr, TokenDef):
-                if attr.regexp.match(''):
-                    raise Exception('token {} matched the empty string'
-                                    .format(name))
                 tokens[name] = attr
                 del dct[name]
         ret = super(LexerBase, cls).__new__(cls, name, bases, dct)

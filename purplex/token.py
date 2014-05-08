@@ -1,10 +1,17 @@
 import re
 
+from purplex.exception import TokenMatchesEmptyStringError
+
 
 class TokenDef(object):
+
     def __init__(self, regexp, ignore=False):
         self.regexp = re.compile(regexp, re.UNICODE)
         self.ignore = ignore
+
+        # Make sure it doesn't match the empty string
+        if self.regexp.match(''):
+            raise TokenMatchesEmptyStringError(regexp)
 
 
 class Token(object):
