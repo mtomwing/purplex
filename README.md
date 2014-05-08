@@ -9,18 +9,17 @@ A set of wrappers and other tools that make it easier to work with PLY.
   * **Lexer**: a pure-python lexer that can be used as a drop-in replacement with PLY.
   * **Parser**: a wrapper around PLY's yacc parser that provides a more pythonic interface.
 
+
 ## Requirements
 
   * Python 3.2+
-  * ply 3.4
+  * requirements.txt
+
 
 ## Testing
 
-`python3 setup.py test`
+`python setup.py test`
 
-## Installation
-
-`python3 setup.py install`
 
 ## Example: Simple Expression Evaluator
 
