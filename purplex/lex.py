@@ -1,5 +1,6 @@
 import collections
 
+from purplex.exception import NoMatchingTokenFoundError
 from purplex.token import TokenDef
 from purplex.token import Token
 
@@ -71,8 +72,7 @@ class Lexer(metaclass=LexerBase):
             else:
                 return token
         else:
-            raise Exception('No token definition matched: "{}"'
-                            .format(self.input_text[self.input_pos]))
+            raise NoMatchingTokenFoundError(self.input_text[self.input_pos])
 
     def done(self):
         return self.input_pos >= len(self.input_text)
