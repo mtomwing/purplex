@@ -1,4 +1,8 @@
-class TokenMatchesEmptyStringError(Exception):
+class PurplexError(Exception):
+    pass
+
+
+class TokenMatchesEmptyStringError(PurplexError):
     '''Raised when TokenDef regex matches the empty string.'''
 
     def __init__(self, regexp):
@@ -6,9 +10,10 @@ class TokenMatchesEmptyStringError(Exception):
         super(TokenMatchesEmptyStringError, self).__init__(message)
 
 
-class NoMatchingTokenFoundError(Exception):
+class NoMatchingTokenFoundError(PurplexError):
     '''Raised when a Lexer cannot match a TokenDef to the input data.'''
 
-    def __init__(self, data):
-        message = 'No token definition matched: {!r}'.format(data)
+    def __init__(self, line_num, line_pos, data):
+        message = ('No token definition matched @ line {} position {}: {!r}'
+                   .format(line_num, line_pos, data + '...'))
         super(NoMatchingTokenFoundError, self).__init__(message)

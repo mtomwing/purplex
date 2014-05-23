@@ -72,7 +72,11 @@ class Lexer(metaclass=LexerBase):
             else:
                 return token
         else:
-            raise NoMatchingTokenFoundError(self.input_text[self.input_pos])
+            raise NoMatchingTokenFoundError(
+                self.line_num,
+                self.line_pos,
+                self.input_text[self.input_pos:self.input_pos + 10],
+            )
 
     def done(self):
         return self.input_pos >= len(self.input_text)
