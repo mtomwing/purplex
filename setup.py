@@ -1,6 +1,5 @@
 from setuptools import setup
 from setuptools.command.test import test as TestCommand
-import subprocess
 import sys
 
 
@@ -21,13 +20,8 @@ class PyTest(TestCommand):
         sys.exit(errno)
 
 
-def latest_git_tag():
-    raw_version = subprocess.check_output(['git', 'describe', '--tags'])
-    return raw_version.rstrip().decode('ascii')
-
-
 setup(name='purplex',
-      version=latest_git_tag(),
+      version='0.1.5',
       description='Pure Python lexer implementation.',
       author='Michael Tom-Wing',
       author_email='mtomwing@gmail.com',
