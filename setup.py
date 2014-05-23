@@ -28,7 +28,7 @@ def latest_git_tag():
 
 setup(name='purplex',
       version=latest_git_tag(),
-      description='Pure python lexer implementation.',
+      description=open('README.md').read(),
       author='Michael Tom-Wing',
       author_email='mtomwing@gmail.com',
       url='https://github.com/mtomwing/purplex',
