@@ -14,9 +14,9 @@ def test_grammar_mostly():
         Production("F : id", noop),
     ], start="E")
 
-    assert grammar.first == {
+    assert grammar._first == {
         # Non-terminals
-        grammar.start: set(["(", "id"]),
+        grammar.start_symbol: set(["(", "id"]),
         "E": set(["(", "id"]),
         "E'": set(["<empty>", "+"]),
         "T": set(["(", "id"]),
@@ -31,8 +31,8 @@ def test_grammar_mostly():
         "id": set(["id"]),
         END_OF_INPUT: set([END_OF_INPUT]),
     }
-    assert grammar.follow == {
-        grammar.start: set([END_OF_INPUT]),
+    assert grammar._follow == {
+        grammar.start_symbol: set([END_OF_INPUT]),
         "E": set([')', END_OF_INPUT]),
         "E'": set([')', END_OF_INPUT]),
         "T": set([')', '+', END_OF_INPUT]),
@@ -49,8 +49,8 @@ def test_grammar_epsilon():
         Production('C : <empty>', noop),
     ], start='A')
 
-    assert grammar.first == {
-        grammar.start: set(['<empty>']),
+    assert grammar._first == {
+        grammar.start_symbol: set(['<empty>']),
         'A': set(['<empty>']),
         'B': set(['<empty>']),
         'C': set(['<empty>']),
@@ -58,8 +58,8 @@ def test_grammar_epsilon():
         'id': set(['id']),
         END_OF_INPUT: set([END_OF_INPUT]),
     }
-    assert grammar.follow == {
-        grammar.start: set([END_OF_INPUT]),
+    assert grammar._follow == {
+        grammar.start_symbol: set([END_OF_INPUT]),
         'A': set([END_OF_INPUT]),
         'B': set([END_OF_INPUT]),
         'C': set([END_OF_INPUT]),

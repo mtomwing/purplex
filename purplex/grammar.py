@@ -1,5 +1,4 @@
 import collections
-import functools
 
 EPSILON = '<empty>'
 END_OF_INPUT = '<$>'
@@ -31,16 +30,17 @@ class Grammar(object):
             self.nonterminals[production.lhs].add(production)
 
         # Augment the grammar to have a definite start symbol
-        self.start = 'START_{}'.format(start)
-        self.nonterminals[self.start].add(
-            Production("{} : {}".format(self.start, start), lambda a: a)
-        )
+        self.start_symbol = 'START_{}'.format(start)
+        self.start = Production("{} : {}".format(self.start_symbol, start),
+                                lambda a: a)
+        self.nonterminals[self.start_symbol].add(self.start)
 
-        self.first = self._compute_first()
-        self.follow = self._compute_follow()
+        self._first = collections.defaultdict(set)
+        self._compute_first()
+        self._follow = collections.defaultdict(set)
+        self._compute_follow()
 
-    @staticmethod
-    def _first(symbols, first):
+    def first(self, symbols):
         """Computes the intermediate FIRST set using symbols."""
         ret = set()
 
@@ -48,8 +48,8 @@ class Grammar(object):
             return set([EPSILON])
 
         for symbol in symbols:
-            ret |= first[symbol] - set([EPSILON])
-            if EPSILON not in first[symbol]:
+            ret |= self._first[symbol] - set([EPSILON])
+            if EPSILON not in self._first[symbol]:
                 break
         else:
             ret.add(EPSILON)
@@ -61,36 +61,29 @@ class Grammar(object):
 
         Tenatively based on _compute_first in PLY.
         """
-        first = collections.defaultdict(set)
-        _first = functools.partial(self._first, first=first)
-
         for terminal in self.terminals:
-            first[terminal].add(terminal)
-        first[END_OF_INPUT].add(END_OF_INPUT)
+            self._first[terminal].add(terminal)
+        self._first[END_OF_INPUT].add(END_OF_INPUT)
 
         while True:
             changed = False
 
             for nonterminal, productions in self.nonterminals.items():
                 for production in productions:
-                    new_first = _first(production.rhs)
-                    if new_first - first[nonterminal]:
-                        first[nonterminal] |= new_first
+                    new_first = self.first(production.rhs)
+                    if new_first - self._first[nonterminal]:
+                        self._first[nonterminal] |= new_first
                         changed = True
 
             if not changed:
                 break
-
-        return first
 
     def _compute_follow(self):
         """Computes the FOLLOW set for every non-terminal in the grammar.
 
         Tenatively based on _compute_follow in PLY.
         """
-        follow = collections.defaultdict(set)
-        follow[self.start].add(END_OF_INPUT)
-        _first = functools.partial(self._first, first=self.first)
+        self._follow[self.start_symbol].add(END_OF_INPUT)
 
         while True:
             changed = False
@@ -101,16 +94,14 @@ class Grammar(object):
                         if symbol not in self.nonterminals:
                             continue
 
-                        first = _first(production.rhs[i + 1:])
+                        first = self.first(production.rhs[i + 1:])
                         new_follow = first - set([EPSILON])
                         if EPSILON in first or i == (len(production.rhs) - 1):
-                            new_follow |= follow[nonterminal]
+                            new_follow |= self._follow[nonterminal]
 
-                        if new_follow - follow[symbol]:
-                            follow[symbol] |= new_follow
+                        if new_follow - self._follow[symbol]:
+                            self._follow[symbol] |= new_follow
                             changed = True
 
             if not changed:
                 break
-
-        return follow
