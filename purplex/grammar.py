@@ -20,6 +20,41 @@ class Production(object):
         return hash(str(self))
 
 
+class DottedRule(object):
+    """Represents a "dotted rule" during closure construction."""
+
+    def __init__(self, production, pos, lookahead):
+        self.production = production
+        self.pos = pos
+        self.lookahead = lookahead
+
+    def __hash__(self):
+        return hash(repr(self))
+
+    def __repr__(self):
+        return '[{} : {}, {}]'.format(
+            self.production.lhs,
+            ' '.join(self.production.rhs[:self.pos] + ['·']
+                     + self.production.rhs[self.pos:]),
+            self.lookahead,
+        )
+
+    def __eq__(self, other):
+        return repr(self) == repr(other)
+
+    @property
+    def rhs(self):
+        return self.production.rhs
+
+    @property
+    def at_end(self):
+        return self.pos == len(self.production.rhs)
+
+    def move_dot(self):
+        """Returns the DottedRule that results from moving the dot."""
+        return self.__class__(self.production, self.pos + 1, self.lookahead)
+
+
 class Grammar(object):
     """Represents a context-free grammar."""
 
