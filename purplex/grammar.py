@@ -140,3 +140,90 @@ class Grammar(object):
 
             if not changed:
                 break
+
+    def initial_closure(self):
+        """Computes the initial closure using the START_foo production."""
+        first_rule = DottedRule(self.start, 0, END_OF_INPUT)
+        return self.closure([first_rule])
+
+    def goto(self, rules, symbol):
+        """Computes the next closure for rules based on the symbol we got.
+
+        Args:
+            rules - an iterable of DottedRules
+            symbol - a string denoting the symbol we've just seen
+
+        Returns: frozenset of DottedRules
+        """
+        return self.closure(
+            {rule.move_dot() for rule in rules
+             if not rule.at_end and rule.rhs[rule.pos] == symbol},
+        )
+
+    def closure(self, rules):
+        """Fills out the entire closure based on some initial dotted rules.
+
+        Args:
+            rules - an iterable of DottedRules
+
+        Returns: frozenset of DottedRules
+
+        """
+        closure = set(rules)
+
+        while True:
+            changed = False
+
+            for rule in closure.copy():
+                # If the dot is at the end, there's no need to process it.
+                if rule.at_end:
+                    continue
+                symbol = rule.rhs[rule.pos]
+
+                for production in self.nonterminals[symbol]:
+                    rest = rule.production.rhs[rule.pos + 1:]
+                    rest.append(rule.lookahead)
+
+                    for first in self.first(rest):
+                        if EPSILON in production.rhs:
+                            # Move immediately to the end if the production
+                            # goes to epsilon
+                            new_rule = DottedRule(production, 1, first)
+                        else:
+                            new_rule = DottedRule(production, 0, first)
+
+                        if new_rule not in closure:
+                            closure.add(new_rule)
+                            changed = True
+
+            if not changed:
+                break
+
+        return frozenset(closure)
+
+    def closures(self):
+        """Computes all LR(1) closure sets for the grammar."""
+        initial = self.initial_closure()
+        closures = collections.OrderedDict()
+        goto = collections.defaultdict(dict)
+
+        todo = set([initial])
+        while todo:
+            closure = todo.pop()
+            closures[closure] = closure
+
+            symbols = {rule.rhs[rule.pos] for rule in closure
+                       if not rule.at_end}
+            for symbol in symbols:
+                next_closure = self.goto(closure, symbol)
+
+                if next_closure in closures or next_closure in todo:
+                    next_closure = (closures.get(next_closure)
+                                    or todo.get(next_closure))
+                else:
+                    closures[next_closure] = next_closure
+                    todo.add(next_closure)
+
+                goto[closure][symbol] = next_closure
+
+        return closures, goto
