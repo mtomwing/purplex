@@ -142,8 +142,13 @@ class Parser(metaclass=ParserBase):
 
             if action[0] == 'reduce':
                 production = action[1]
-                args = (item[2] for item in stack[-len(production):])
-                del stack[-len(production):]
+
+                # Special case for epsilon rules
+                if len(production):
+                    args = (item[2] for item in stack[-len(production):])
+                    del stack[-len(production):]
+                else:
+                    args = []
 
                 prev_state, _, _ = stack[-1]
                 new_state = self.GOTO[prev_state][production.lhs]
