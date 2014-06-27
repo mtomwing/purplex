@@ -10,7 +10,7 @@ class Production(object):
     def __init__(self, rule, func):
         items = rule.split(':', 1)
         self.lhs = items[0].strip()
-        self.rhs = items[1].strip().split()
+        self.rhs = items[1].strip().split() or [EPSILON]
         self.func = func
 
     def __str__(self):
