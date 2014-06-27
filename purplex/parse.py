@@ -1,14 +1,20 @@
+import collections
 import functools
+import itertools
 import logging
 
-from ply import yacc
+from purplex.grammar import Grammar, Production, END_OF_INPUT
+from purplex.lex import Lexer
+from purplex.token import Token
+
+END_OF_INPUT_TOKEN = Token(END_OF_INPUT, '', '', 0, 0)
 
 
-def attach(production):
+def attach(rule):
     def wrapper(func):
-        if not hasattr(func, '_productions'):
-            func._productions = []
-        func._productions.append(production)
+        if not hasattr(func, 'productions'):
+            func.productions = set()
+        func.productions.add(Production(rule, func))
         return func
     return wrapper
 
@@ -47,101 +53,114 @@ def attach_sep_list(nonterminal, singular, separator, epsilon=False):
     return wrapper
 
 
-class MagicParser(object):
-    def add(self, parser, production, node_cls):
-        def p_something(t):
-            nargs = len(t.slice)
-            t[0] = node_cls(parser, *[t[i] for i in range(1, nargs)])
-        func_name = 'p_{}_{}{}'.format(production.split()[0],
-                                       node_cls.__name__,
-                                       abs(hash(production)))
-        p_something.__name__ = func_name
-        setattr(self, func_name, p_something)
-        getattr(self, func_name).__doc__ = production
-
-
 class ParserBase(type):
+
     def __new__(cls, name, bases, dct):
-        productions = {}
-
+        productions = set()
         for _, attr in dct.items():
-            if hasattr(attr, '_productions'):
-                for production in attr._productions:
-                    productions[production] = attr
+            if hasattr(attr, 'productions'):
+                productions |= attr.productions
 
-        ret = type.__new__(cls, name, bases, dct)
-        if not hasattr(ret, '_productions'):
-            ret._productions = {}
-        productions.update(ret._productions)
-        ret._productions = productions
-        return ret
+        grammar = Grammar(
+            dct['LEXER'].tokens.keys(),
+            productions,
+            start=dct['START'],
+        )
+        INITIAL_STATE, ACTION, GOTO = cls.make_tables(grammar)
+        dct.update({
+            'grammar': grammar,
+            'INITIAL_STATE': INITIAL_STATE,
+            'ACTION': ACTION,
+            'GOTO': GOTO,
+        })
+        return type.__new__(cls, name, bases, dct)
+
+    @staticmethod
+    def make_tables(grammar):
+        """Generates the ACTION and GOTO tables for the grammar.
+
+        Returns:
+            action - dict[state][lookahead] = (action, ...)
+            goto - dict[state][just_reduced] = new_state
+
+        """
+        ACTION = collections.defaultdict(dict)
+        GOTO = collections.defaultdict(dict)
+
+        labels = {}
+
+        def get_label(closure):
+            if closure not in labels:
+                labels[closure] = len(labels)
+            return labels[closure]
+
+        initial, closures, goto = grammar.closures()
+        for closure in closures:
+            label = get_label(closure)
+
+            for rule in closure:
+                if not rule.at_end:
+                    symbol = rule.rhs[rule.pos]
+                    is_terminal = symbol in grammar.terminals
+                    has_goto = symbol in goto[closure]
+                    if is_terminal and has_goto:
+                        ACTION[label][symbol] = \
+                            ('shift', get_label(goto[closure][symbol]))
+                elif rule.production == grammar.start and rule.at_end:
+                    ACTION[label][rule.lookahead] = ('accept',)
+                elif rule.at_end:
+                    ACTION[label][rule.lookahead] = \
+                        ('reduce', rule.production)
+
+            for symbol in grammar.nonterminals:
+                if symbol in goto[closure]:
+                    GOTO[label][symbol] = get_label(goto[closure][symbol])
+
+        return get_label(initial), ACTION, GOTO
 
 
 class Parser(metaclass=ParserBase):
-    LEXER = None
-    PRECEDENCE = []
 
-    @classmethod
-    def attach(cls, production):
-        def wrapper(node_cls):
-            cls._productions[production] = node_cls
-            return node_cls
-        return wrapper
+    LEXER = Lexer
+    START = 'S'
 
-    def __init__(self, start=None, debug=False):
-        self._parser = self._build(start, debug)
-        self._lexer = None
+    grammar = None
+    INITIAL_STATE = 0
+    ACTION = {}
+    GOTO = {}
 
-    def _build(self, start, debug):
-        magic = MagicParser()
-        magic.tokens = [name for name, tokendef in self.LEXER.tokens.items()
-                        if not tokendef.ignore]
-        if self.PRECEDENCE:
-            magic.precedence = self.PRECEDENCE
+    def parse(self, raw):
+        """Parses an input string and applies the parser's grammar."""
+        lexer = self.LEXER(raw)
+        tokens = iter(itertools.chain(lexer, [END_OF_INPUT_TOKEN]))
+        stack = [(self.INITIAL_STATE, '<initial>', '<begin>')]
 
-        for production, node_cls in self._productions.items():
-            magic.add(self, production, node_cls)
-        setattr(magic, 'p_error', self.on_error)
+        token = next(tokens)
+        while stack:
+            state, _, _ = stack[-1]
+            action = self.ACTION[state][token.name]
 
-        error_logger = logging.getLogger('{}.{}'
-                                         .format(self.__module__,
-                                                 self.__class__.__name__))
-        handler = logging.StreamHandler()
-        formatter = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
-        handler.setFormatter(formatter)
-        error_logger.addHandler(handler)
+            if action[0] == 'reduce':
+                production = action[1]
+                args = (item[2] for item in stack[-len(production):])
+                del stack[-len(production):]
 
-        debug_logger = error_logger if debug else yacc.NullLogger()
+                prev_state, _, _ = stack[-1]
+                new_state = self.GOTO[prev_state][production.lhs]
+                stack.append((
+                    new_state,
+                    production.lhs,
+                    production.func(self, *args),
+                ))
+            elif action[0] == 'shift':
+                stack.append((action[1], token.name, token.value))
+                token = next(tokens)
+            elif action[0] == 'accept':
+                if len(stack) == 2:
+                    return stack[-1][2]
+                else:
+                    # XXX: Raise something more meaningful
+                    raise Exception('unparsed input remaining')
 
-        if debug:
-            error_logger.setLevel(logging.DEBUG)
-            self.debug = error_logger
-        else:
-            error_logger.setLevel(logging.ERROR)
-            self.debug = False
-
-        return yacc.yacc(module=magic, start=start,
-                         write_tables=False, debug=debug,
-                         debuglog=debug_logger, errorlog=error_logger)
-
-    def parse(self, input_stream):
-        self.lexer = self.LEXER(input_stream)
-
-        def tokens():
-            for token in self.lexer:
-                yield token
-            yield None
-
-        token_gen = tokens()
-
-        return self._parser.parse(lexer=self.lexer,
-                                  tokenfunc=functools.partial(next, token_gen),
-                                  debug=self.debug)
-
-    # Implement these if you want:
-
-    def on_error(self, p):
-        '''
-        Is called when PLY's yacc encounters a parsing error.
-        '''
-        pass
+        # XXX: Raise something more meaningful
+        raise Exception('ran out of input')
