@@ -19,6 +19,9 @@ class Production(object):
     def __hash__(self):
         return hash(str(self))
 
+    def __len__(self):
+        return len(self.rhs) - int(EPSILON in self.rhs)
+
 
 class DottedRule(object):
     """Represents a "dotted rule" during closure construction."""
@@ -41,6 +44,13 @@ class DottedRule(object):
 
     def __eq__(self, other):
         return repr(self) == repr(other)
+
+    def __len__(self):
+        return len(self.production)
+
+    @property
+    def lhs(self):
+        return self.production.lhs
 
     @property
     def rhs(self):
