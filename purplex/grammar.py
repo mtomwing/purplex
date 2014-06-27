@@ -226,4 +226,4 @@ class Grammar(object):
 
                 goto[closure][symbol] = next_closure
 
-        return closures, goto
+        return initial, closures, goto
