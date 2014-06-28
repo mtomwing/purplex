@@ -56,10 +56,8 @@ class Lexer(metaclass=LexerBase):
                               self.line_num, self.line_pos)
                 matches.append(token)
 
-        s_matches = sorted(matches, key=lambda t: len(t), reverse=True)
-
-        if s_matches:
-            token = s_matches[0]
+        if matches:
+            token = max(matches, key=len)
             self.consume(token)
 
             if hasattr(self, 'on_{}'.format(token.name)):
