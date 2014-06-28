@@ -161,11 +161,4 @@ class Parser(metaclass=ParserBase):
                 stack.append((action[1], token.name, token.value))
                 token = next(tokens)
             elif action[0] == 'accept':
-                if len(stack) == 2:
-                    return stack[-1][2]
-                else:
-                    # XXX: Raise something more meaningful
-                    raise Exception('unparsed input remaining')
-
-        # XXX: Raise something more meaningful
-        raise Exception('ran out of input')
+                return stack[-1][2]
