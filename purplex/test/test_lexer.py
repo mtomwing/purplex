@@ -26,13 +26,13 @@ def test_lex_foobar():
 
     assert tokens[0].name == 'FOO'
     assert tokens[0].value == 'foo'
-    assert tokens[0].defn == FooBarLexer.tokens['FOO']
+    assert tokens[0].defn == FooBarLexer.FOO
     assert tokens[0].line_num == 1
     assert tokens[0].line_pos == 1
 
     assert tokens[1].name == 'BAR'
     assert tokens[1].value == 'bar'
-    assert tokens[1].defn == FooBarLexer.tokens['BAR']
+    assert tokens[1].defn == FooBarLexer.BAR
     assert tokens[1].line_num == 1
     assert tokens[1].line_pos == 4
 
@@ -55,6 +55,15 @@ class LongestLexer(purplex.Lexer):
 def test_lex_longest_first():
     tokens = list(LongestLexer('foofoofoofoofoo'))
     assert [t.name for t in tokens] == ['TRIPLE_FOO', 'DOUBLE_FOO']
+
+
+class SubclassedLongestLexer(LongestLexer):
+    QUAD_FOO = purplex.TokenDef(r'foofoofoofoo')
+
+
+def test_lex_subclass_longest_first():
+    tokens = list(SubclassedLongestLexer('foofoofoofoofoo'))
+    assert [t.name for t in tokens] == ['QUAD_FOO', 'FOO']
 
 
 class TieLexer_foofirst(purplex.Lexer):

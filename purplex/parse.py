@@ -62,7 +62,7 @@ class ParserBase(type):
                 productions |= attr.productions
 
         grammar = Grammar(
-            dct['LEXER'].tokens.keys(),
+            dct['LEXER'].token_map.keys(),
             productions,
             start=dct['START'],
         )
