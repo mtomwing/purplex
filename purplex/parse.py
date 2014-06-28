@@ -94,7 +94,7 @@ class Parser(metaclass=ParserBase):
 
     def _build(self, start, debug):
         magic = MagicParser()
-        magic.tokens = [name for name, tokendef in self.LEXER.tokens.items()
+        magic.tokens = [name for name, tokendef in self.LEXER.tokens
                         if not tokendef.ignore]
         if self.PRECEDENCE:
             magic.precedence = self.PRECEDENCE

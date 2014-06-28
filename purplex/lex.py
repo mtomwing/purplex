@@ -11,15 +11,20 @@ class LexerBase(type):
         return collections.OrderedDict()
 
     def __new__(cls, name, bases, dct):
-        tokens = collections.OrderedDict()
+        ret = super(LexerBase, cls).__new__(cls, name, bases, dct)
+        token_map = collections.OrderedDict()
+
+        # Collect all TokenDefs
         for name, attr in dct.items():
             if isinstance(attr, TokenDef):
-                tokens[name] = attr
-                del dct[name]
-        ret = super(LexerBase, cls).__new__(cls, name, bases, dct)
-        if hasattr(ret, 'tokens'):
-            tokens.update(ret.tokens)
-        ret.tokens = tokens
+                token_map[name] = attr
+
+        # Inherit TokenDefs from any base classes
+        if hasattr(ret, 'token_map'):
+            token_map.update(ret.token_map)
+
+        ret.token_map = token_map
+        ret.tokens = list(token_map.items())
         return ret
 
 
@@ -49,7 +54,7 @@ class Lexer(metaclass=LexerBase):
     def next_token(self):
         matches = []
 
-        for name, token_defn in self.tokens.items():
+        for name, token_defn in self.tokens:
             match = token_defn.regexp.match(self.input_text, self.input_pos)
             if match:
                 token = Token(name, match.group(0), token_defn,
