@@ -3,6 +3,7 @@ import functools
 import itertools
 import logging
 
+from purplex.exception import TableConflictError
 from purplex.grammar import Grammar, Production, END_OF_INPUT
 from purplex.lex import Lexer
 from purplex.token import Token
@@ -99,20 +100,26 @@ class ParserBase(type):
             label = get_label(closure)
 
             for rule in closure:
+                new_action, lookahead = None, rule.lookahead
+
                 if not rule.at_end:
                     symbol = rule.rhs[rule.pos]
                     is_terminal = symbol in grammar.terminals
                     has_goto = symbol in goto[closure]
-
                     if is_terminal and has_goto:
                         next_state = get_label(goto[closure][symbol])
-                        ACTION[label, symbol] = ('shift', next_state)
-
+                        new_action, lookahead = ('shift', next_state), symbol
                 elif rule.production == grammar.start and rule.at_end:
-                    ACTION[label, rule.lookahead] = ('accept',)
-
+                    new_action = ('accept',)
                 elif rule.at_end:
-                    ACTION[label, rule.lookahead] = ('reduce', rule.production)
+                    new_action = ('reduce', rule.production)
+
+                if new_action is not None:
+                    prev_action = ACTION.get((label, lookahead))
+                    if prev_action is not None and prev_action != new_action:
+                        raise TableConflictError(prev_action, new_action)
+
+                    ACTION[label, lookahead] = new_action
 
             for symbol in grammar.nonterminals:
                 if symbol in goto[closure]:
