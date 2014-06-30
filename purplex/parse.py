@@ -84,8 +84,8 @@ class ParserBase(type):
             goto - dict[state][just_reduced] = new_state
 
         """
-        ACTION = collections.defaultdict(dict)
-        GOTO = collections.defaultdict(dict)
+        ACTION = {}
+        GOTO = {}
 
         labels = {}
 
@@ -103,18 +103,20 @@ class ParserBase(type):
                     symbol = rule.rhs[rule.pos]
                     is_terminal = symbol in grammar.terminals
                     has_goto = symbol in goto[closure]
+
                     if is_terminal and has_goto:
-                        ACTION[label][symbol] = \
-                            ('shift', get_label(goto[closure][symbol]))
+                        next_state = get_label(goto[closure][symbol])
+                        ACTION[label, symbol] = ('shift', next_state)
+
                 elif rule.production == grammar.start and rule.at_end:
-                    ACTION[label][rule.lookahead] = ('accept',)
+                    ACTION[label, rule.lookahead] = ('accept',)
+
                 elif rule.at_end:
-                    ACTION[label][rule.lookahead] = \
-                        ('reduce', rule.production)
+                    ACTION[label, rule.lookahead] = ('reduce', rule.production)
 
             for symbol in grammar.nonterminals:
                 if symbol in goto[closure]:
-                    GOTO[label][symbol] = get_label(goto[closure][symbol])
+                    GOTO[label, symbol] = get_label(goto[closure][symbol])
 
         return get_label(initial), ACTION, GOTO
 
@@ -138,7 +140,7 @@ class Parser(metaclass=ParserBase):
         token = next(tokens)
         while stack:
             state, _, _ = stack[-1]
-            action = self.ACTION[state][token.name]
+            action = self.ACTION[state, token.name]
 
             if action[0] == 'reduce':
                 production = action[1]
@@ -151,7 +153,7 @@ class Parser(metaclass=ParserBase):
                     args = []
 
                 prev_state, _, _ = stack[-1]
-                new_state = self.GOTO[prev_state][production.lhs]
+                new_state = self.GOTO[prev_state, production.lhs]
                 stack.append((
                     new_state,
                     production.lhs,
