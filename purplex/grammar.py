@@ -16,6 +16,9 @@ class Production(object):
     def __str__(self):
         return '{} : {}'.format(self.lhs, ' '.join(self.rhs))
 
+    def __repr__(self):
+        return repr(str(self))
+
     def __hash__(self):
         return hash(str(self))
 
