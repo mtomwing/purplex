@@ -1,6 +1,8 @@
 import pytest
 
-from purplex import Lexer, TokenDef, Parser, attach, exception
+from purplex import exception
+from purplex.lex import Lexer, TokenDef
+from purplex.parse import ParserBase, Parser, attach
 
 
 class SimpleExprLexer(Lexer):
@@ -19,35 +21,21 @@ class SimpleExprLexer(Lexer):
 
 
 def test_table_conflict():
+    noop = lambda *args: args
+    attrs = {
+        'LEXER': SimpleExprLexer,
+        'START': 'e',
+
+        'brackets': attach('e : LPAREN e RPAREN')(noop),
+        'addition': attach('e : e PLUS e')(noop),
+        'subtract': attach('e : e MINUS e')(noop),
+        'multiply': attach('e : e TIMES e')(noop),
+        'division': attach('e : e DIVIDE e')(noop),
+        'number': attach('e : INTEGER')(noop),
+    }
+
     with pytest.raises(exception.TableConflictError):
-        class SimpleExprParser(Parser):
-
-            LEXER = SimpleExprLexer
-            START = 'e'
-
-            @attach('e : LPAREN e RPAREN')
-            def brackets(self, lparen, expr, rparen):
-                return expr
-
-            @attach('e : e PLUS e')
-            def addition(self, left, op, right):
-                return left + right
-
-            @attach('e : e MINUS e')
-            def subtract(self, left, op, right):
-                return left - right
-
-            @attach('e : e TIMES e')
-            def multiply(self, left, op, right):
-                return left * right
-
-            @attach('e : e DIVIDE e')
-            def division(self, left, op, right):
-                return left / right
-
-            @attach('e : INTEGER')
-            def number(self, num):
-                return int(num)
+        ParserBase.__new__(ParserBase, 'SimpleExprParser', (Parser,), attrs)
 
 
 def test_basic_no_conflict():
