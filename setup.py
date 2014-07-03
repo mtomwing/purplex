@@ -21,13 +21,12 @@ class PyTest(TestCommand):
 
 
 setup(name='purplex',
-      version='0.2.0',
-      description='Pure Python lexer implementation.',
+      version='0.2.1',
+      description='Pure Python lexer and parser implementation.',
       author='Michael Tom-Wing',
       author_email='mtomwing@gmail.com',
       url='https://github.com/mtomwing/purplex',
       packages=['purplex'],
       license='MIT',
-      install_requires=['ply==3.4'],
       cmdclass={'test': PyTest},
       zip_safe=False)
