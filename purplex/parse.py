@@ -10,12 +10,16 @@ from purplex.token import Token
 
 END_OF_INPUT_TOKEN = Token(END_OF_INPUT, '', '', 0, 0)
 
+LEFT = 'left'
+RIGHT = 'right'
+DEFAULT_PREC = (LEFT, 0)
 
-def attach(rule):
+
+def attach(rule, prec_symbol=None):
     def wrapper(func):
         if not hasattr(func, 'productions'):
             func.productions = set()
-        func.productions.add(Production(rule, func))
+        func.productions.add((Production(rule, func), prec_symbol))
         return func
     return wrapper
 
@@ -62,12 +66,13 @@ class ParserBase(type):
             if hasattr(attr, 'productions'):
                 productions |= attr.productions
 
-        grammar = Grammar(
-            dct['LEXER'].token_map.keys(),
-            productions,
-            start=dct['START'],
-        )
-        INITIAL_STATE, ACTION, GOTO = cls.make_tables(grammar)
+        grammar = Grammar(dct['LEXER'].token_map.keys(),
+                          [production for production, _ in productions],
+                          start=dct['START'])
+        precedence = cls.compute_precedence(grammar.terminals,
+                                            productions,
+                                            dct.get('PRECEDENCE') or ())
+        INITIAL_STATE, ACTION, GOTO = cls.make_tables(grammar, precedence)
         dct.update({
             'grammar': grammar,
             'INITIAL_STATE': INITIAL_STATE,
@@ -77,7 +82,42 @@ class ParserBase(type):
         return type.__new__(cls, name, bases, dct)
 
     @staticmethod
-    def make_tables(grammar):
+    def compute_precedence(terminals, productions, precedence_levels):
+        """Computes the precedence of terminal and production.
+
+        The precedence of a terminal is it's level in the PRECEDENCE tuple. For
+        a production, the precedence is the right-most terminal (if it exists).
+        The default precedence is DEFAULT_PREC - (LEFT, 0).
+
+        Returns:
+            precedence - dict[terminal | production] = (assoc, level)
+
+        """
+        precedence = collections.OrderedDict()
+
+        for terminal in terminals:
+            precedence[terminal] = DEFAULT_PREC
+
+        level_precs = range(len(precedence_levels), 0, -1)
+        for i, level in zip(level_precs, precedence_levels):
+            assoc = level[0]
+            for symbol in level[1:]:
+                precedence[symbol] = (assoc, i)
+
+        for production, prec_symbol in productions:
+            if prec_symbol is None:
+                prod_terminals = [symbol for symbol in production.rhs
+                                  if symbol in terminals] or [None]
+                precedence[production] = precedence.get(prod_terminals[-1],
+                                                        DEFAULT_PREC)
+            else:
+                precedence[production] = precedence.get(prec_symbol,
+                                                        DEFAULT_PREC)
+
+        return precedence
+
+    @staticmethod
+    def make_tables(grammar, precedence):
         """Generates the ACTION and GOTO tables for the grammar.
 
         Returns:
@@ -94,6 +134,17 @@ class ParserBase(type):
             if closure not in labels:
                 labels[closure] = len(labels)
             return labels[closure]
+
+        def resolve_shift_reduce(lookahead, s_action, r_action):
+            s_assoc, s_level = precedence[lookahead]
+            r_assoc, r_level = precedence[r_action[1]]
+
+            if s_level < r_level:
+                return r_action
+            elif s_level == r_level and r_assoc == LEFT:
+                return r_action
+            else:
+                return s_action
 
         initial, closures, goto = grammar.closures()
         for closure in closures:
@@ -114,12 +165,26 @@ class ParserBase(type):
                 elif rule.at_end:
                     new_action = ('reduce', rule.production)
 
-                if new_action is not None:
-                    prev_action = ACTION.get((label, lookahead))
-                    if prev_action is not None and prev_action != new_action:
+                if new_action is None:
+                    continue
+
+                prev_action = ACTION.get((label, lookahead))
+                if prev_action is None or prev_action == new_action:
+                    ACTION[label, lookahead] = new_action
+                else:
+                    types = (prev_action[0], new_action[0])
+                    if types == ('shift', 'reduce'):
+                        chosen = resolve_shift_reduce(lookahead,
+                                                      prev_action,
+                                                      new_action)
+                    elif types == ('reduce', 'shift'):
+                        chosen = resolve_shift_reduce(lookahead,
+                                                      new_action,
+                                                      prev_action)
+                    else:
                         raise TableConflictError(prev_action, new_action)
 
-                    ACTION[label, lookahead] = new_action
+                    ACTION[label, lookahead] = chosen
 
             for symbol in grammar.nonterminals:
                 if symbol in goto[closure]:
@@ -132,6 +197,7 @@ class Parser(metaclass=ParserBase):
 
     LEXER = Lexer
     START = 'S'
+    PRECEDENCE = ()
 
     grammar = None
     INITIAL_STATE = 0

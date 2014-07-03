@@ -26,12 +26,11 @@ def test_table_conflict():
         'LEXER': SimpleExprLexer,
         'START': 'e',
 
-        'brackets': attach('e : LPAREN e RPAREN')(noop),
-        'addition': attach('e : e PLUS e')(noop),
-        'subtract': attach('e : e MINUS e')(noop),
-        'multiply': attach('e : e TIMES e')(noop),
-        'division': attach('e : e DIVIDE e')(noop),
-        'number': attach('e : INTEGER')(noop),
+        'm': attach('m : e INTEGER')(noop),
+        'e_a': attach('e : a')(noop),
+        'e_b': attach('e : b')(noop),
+        'a': attach('a : ')(noop),
+        'b': attach('b : ')(noop),
     }
 
     with pytest.raises(exception.TableConflictError):
@@ -42,25 +41,45 @@ def test_basic_no_conflict():
     class SimpleExprParser(Parser):
 
         LEXER = SimpleExprLexer
-        START = 's'
+        START = 'e'
 
-        @attach('s : s PLUS p')
-        def sums_plus(self, *args):
-            return args[0] + args[2]
+        PRECEDENCE = (
+            ('right', 'UMINUS'),
+            ('left', 'TIMES', 'DIVIDE'),
+            ('left', 'PLUS', 'MINUS'),
+        )
 
-        @attach('p : p TIMES v')
-        def products_times(self, *args):
-            return args[0] * args[2]
+        @attach('e : LPAREN e RPAREN')
+        def brackets(self, lparen, expr, rparen):
+            return expr
 
-        @attach('s : p')
-        @attach('p : v')
-        def noop(self, *args):
-            return args[0]
+        @attach('e : e PLUS e')
+        def addition(self, left, op, right):
+            return left + right
 
-        @attach('v : INTEGER')
-        def value(self, *args):
-            return int(args[0])
+        @attach('e : e MINUS e')
+        def subtract(self, left, op, right):
+            return left - right
+
+        @attach('e : e TIMES e')
+        def multiply(self, left, op, right):
+            return left * right
+
+        @attach('e : e DIVIDE e')
+        def division(self, left, op, right):
+            return left / right
+
+        @attach('e : MINUS e', prec_symbol='UMINUS')
+        def negate(self, minus, expr):
+            return -expr
+
+        @attach('e : INTEGER')
+        def number(self, num):
+            return int(num)
 
     parser = SimpleExprParser()
-    assert parser.parse('2 + 2 * 4') == 10
-    assert parser.parse('5 * 2 + 2') == 12
+    assert parser.parse('2 + 3 * 4 - 4') == 10
+    assert parser.parse('-4') == -4
+    assert parser.parse('-4 * 2') == -8
+    assert parser.parse('-2 * - (1 + 1)') == 4
+    assert parser.parse('6 / 2 * 4 - 8 * 1') == 4
