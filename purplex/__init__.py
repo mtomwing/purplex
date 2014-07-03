@@ -11,3 +11,4 @@ from .parse import attach
 from .parse import attach_list
 from .parse import attach_sep_list
 from .parse import Parser
+from .parse import LEFT, RIGHT

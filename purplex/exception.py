@@ -17,3 +17,11 @@ class NoMatchingTokenFoundError(PurplexError):
         message = ('No token definition matched @ line {} position {}: {!r}'
                    .format(line_num, line_pos, data + '...'))
         super(NoMatchingTokenFoundError, self).__init__(message)
+
+
+class TableConflictError(PurplexError):
+    '''Raised when a Parser would overwrite an action in the action table.'''
+
+    def __init__(self, prev_action, new_action):
+        message = 'Tried to replace {} with {}'.format(prev_action, new_action)
+        super(TableConflictError, self).__init__(message)
