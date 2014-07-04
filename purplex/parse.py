@@ -3,7 +3,7 @@ import functools
 import itertools
 import logging
 
-from purplex.exception import TableConflictError
+from purplex.exception import TableConflictError, StartSymbolNotReducedError
 from purplex.grammar import Grammar, Production, END_OF_INPUT
 from purplex.lex import Lexer
 from purplex.token import Token
@@ -213,7 +213,10 @@ class Parser(metaclass=ParserBase):
         token = next(tokens)
         while stack:
             state, _, _ = stack[-1]
-            action = self.ACTION[state, token.name]
+
+            action = self.ACTION.get((state, token.name))
+            if action is None:
+                raise StartSymbolNotReducedError(self.START)
 
             if action[0] == 'reduce':
                 production = action[1]

@@ -83,3 +83,6 @@ def test_basic_no_conflict():
     assert parser.parse('-4 * 2') == -8
     assert parser.parse('-2 * - (1 + 1)') == 4
     assert parser.parse('6 / 2 * 4 - 8 * 1') == 4
+
+    with pytest.raises(exception.StartSymbolNotReducedError):
+        parser.parse('6 - 2 +')

@@ -25,3 +25,11 @@ class TableConflictError(PurplexError):
     def __init__(self, prev_action, new_action):
         message = 'Tried to replace {} with {}'.format(prev_action, new_action)
         super(TableConflictError, self).__init__(message)
+
+
+class StartSymbolNotReducedError(PurplexError):
+    '''Raised when a Parser uses all input without accepting.'''
+
+    def __init__(self, start_symbol):
+        message = 'Consumed all input without reducing {}'.format(start_symbol)
+        super(StartSymbolNotReducedError, self).__init__(message)
