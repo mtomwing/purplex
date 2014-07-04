@@ -13,17 +13,20 @@ class Production(object):
         self.rhs = items[1].strip().split() or [EPSILON]
         self.func = func
 
+        self._str = '{} : {}'.format(self.lhs, ' '.join(self.rhs))
+        self._len = len(self.rhs) - int(EPSILON in self.rhs)
+
     def __str__(self):
-        return '{} : {}'.format(self.lhs, ' '.join(self.rhs))
+        return self._str
 
     def __repr__(self):
-        return repr(str(self))
+        return repr(self._str)
 
     def __hash__(self):
-        return hash(str(self))
+        return hash(self._str)
 
     def __len__(self):
-        return len(self.rhs) - int(EPSILON in self.rhs)
+        return self._len
 
 
 class DottedRule(object):
@@ -34,19 +37,23 @@ class DottedRule(object):
         self.pos = pos
         self.lookahead = lookahead
 
-    def __hash__(self):
-        return hash(repr(self))
-
-    def __repr__(self):
-        return '[{} : {}, {}]'.format(
+        self._str = '[{} : {}, {}]'.format(
             self.production.lhs,
             ' '.join(self.production.rhs[:self.pos] + ['·']
                      + self.production.rhs[self.pos:]),
             self.lookahead,
         )
+        self.at_end = self.pos == len(self.production.rhs)
+        self.rest = self.production.rhs[self.pos + 1:] + [self.lookahead]
+
+    def __hash__(self):
+        return hash(self._str)
+
+    def __repr__(self):
+        return repr(self._str)
 
     def __eq__(self, other):
-        return repr(self) == repr(other)
+        return self.production == other.production and self.pos == other.pos
 
     def __len__(self):
         return len(self.production)
@@ -58,10 +65,6 @@ class DottedRule(object):
     @property
     def rhs(self):
         return self.production.rhs
-
-    @property
-    def at_end(self):
-        return self.pos == len(self.production.rhs)
 
     def move_dot(self):
         """Returns the DottedRule that results from moving the dot."""
@@ -182,35 +185,29 @@ class Grammar(object):
         Returns: frozenset of DottedRules
 
         """
-        closure = set(rules)
+        closure = set()
 
-        while True:
-            changed = False
+        todo = set(rules)
+        while todo:
+            rule = todo.pop()
+            closure.add(rule)
 
-            for rule in closure.copy():
-                # If the dot is at the end, there's no need to process it.
-                if rule.at_end:
-                    continue
-                symbol = rule.rhs[rule.pos]
+            # If the dot is at the end, there's no need to process it.
+            if rule.at_end:
+                continue
 
-                for production in self.nonterminals[symbol]:
-                    rest = rule.production.rhs[rule.pos + 1:]
-                    rest.append(rule.lookahead)
+            symbol = rule.rhs[rule.pos]
+            for production in self.nonterminals[symbol]:
+                for first in self.first(rule.rest):
+                    if EPSILON in production.rhs:
+                        # Move immediately to the end if the production
+                        # goes to epsilon
+                        new_rule = DottedRule(production, 1, first)
+                    else:
+                        new_rule = DottedRule(production, 0, first)
 
-                    for first in self.first(rest):
-                        if EPSILON in production.rhs:
-                            # Move immediately to the end if the production
-                            # goes to epsilon
-                            new_rule = DottedRule(production, 1, first)
-                        else:
-                            new_rule = DottedRule(production, 0, first)
-
-                        if new_rule not in closure:
-                            closure.add(new_rule)
-                            changed = True
-
-            if not changed:
-                break
+                    if new_rule not in closure:
+                        todo.add(new_rule)
 
         return frozenset(closure)
 
