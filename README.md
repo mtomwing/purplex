@@ -14,7 +14,7 @@ NOTE: As of the parser rewrite, only "small" grammars are supported. In the futu
 
 ## Requirements
 
-  * Python 3.2+
+  * Python 2.7 or 3+
   * requirements.txt
 
 

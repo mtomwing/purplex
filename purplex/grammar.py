@@ -37,10 +37,10 @@ class DottedRule(object):
         self.pos = pos
         self.lookahead = lookahead
 
-        self._str = '[{} : {}, {}]'.format(
+        self._str = '[{} : {} . {}, {}]'.format(
             self.production.lhs,
-            ' '.join(self.production.rhs[:self.pos] + ['·']
-                     + self.production.rhs[self.pos:]),
+            ' '.join(self.production.rhs[:self.pos]),
+            ' '.join(self.production.rhs[self.pos:]),
             self.lookahead,
         )
         self.at_end = self.pos == len(self.production.rhs)

@@ -1,6 +1,6 @@
 """Tests for purplex's lexer."""
 
-from unittest.mock import patch
+from mock import patch
 
 import pytest
 

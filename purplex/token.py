@@ -5,6 +5,8 @@ from purplex.exception import TokenMatchesEmptyStringError
 
 class TokenDef(object):
 
+    NEXT_NUM = 0
+
     def __init__(self, regexp, ignore=False):
         self.regexp = re.compile(regexp, re.UNICODE)
         self.ignore = ignore
@@ -12,6 +14,12 @@ class TokenDef(object):
         # Make sure it doesn't match the empty string
         if self.regexp.match(''):
             raise TokenMatchesEmptyStringError(regexp)
+
+        self.num = TokenDef.NEXT_NUM
+        TokenDef.NEXT_NUM += 1
+
+    def __lt__(self, other):
+        return self.num < other.num
 
 
 class Token(object):

@@ -1,7 +1,7 @@
 import collections
-import functools
 import itertools
-import logging
+
+import six
 
 from purplex.exception import TableConflictError, StartSymbolNotReducedError
 from purplex.grammar import Grammar, Production, END_OF_INPUT
@@ -193,7 +193,8 @@ class ParserBase(type):
         return get_label(initial), ACTION, GOTO
 
 
-class Parser(metaclass=ParserBase):
+@six.add_metaclass(ParserBase)
+class Parser(object):
 
     LEXER = Lexer
     START = 'S'

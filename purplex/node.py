@@ -1,7 +1,10 @@
 import abc
 
+import six
 
-class Node(object, metaclass=abc.ABCMeta):
+
+@six.add_metaclass(abc.ABCMeta)
+class Node(object):
     @abc.abstractmethod
     def pretty(self):
         return ''
