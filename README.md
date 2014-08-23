@@ -4,12 +4,16 @@
 [![PyPi version][pypi-version-badge]] [pypi-version]
 [![PyPi downloads][pypi-downloads-badge]] [pypi-downloads]
 
-A set of wrappers and other tools that make it easier to work with PLY.
+A pure-Python lexer and parser. Together they provide an experience reminiscent of `yacc` or `bison`, but of course in a more Pythonic way.
 
-  * **Lexer**: a pure-python lexer that can be used as a drop-in replacement with PLY.
-  * **Parser**: a pure-python LR(1) parser with support for precedence
+NOTE: As of the parser rewrite, only "small" grammars are supported. In the future I hope to improve this by using LALR(1) instead of LR(1) for the parsing table generation.
 
-NOTE: As of the parser rewrite, only "small" grammars are supported. In the future I hope to improve this by using LALR(1) instead of LR(1).
+
+## History
+
+This project started out as a way to avoid writing C++ for a compilers class. Since I didn't know much about parsing algorithms at the time, it was simply intended to provide a nicer interface to PLY. After the class was over I took some time to tidy it up and add the textbook (basically straight out of the Dragon Book) LR(1) parsing algorithm.
+
+I use purplex myself for one-off scripts here and there. However to date, the only project using purplex for anything big is [hangups](https://github.com/tdryer/hangups).
 
 
 ## Requirements
