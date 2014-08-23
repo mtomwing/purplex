@@ -1,6 +1,8 @@
 from operator import itemgetter
 import collections
 
+import six
+
 from purplex.exception import NoMatchingTokenFoundError
 from purplex.token import TokenDef
 from purplex.token import Token
@@ -25,7 +27,8 @@ class LexerBase(type):
         return ret
 
 
-class Lexer(metaclass=LexerBase):
+@six.add_metaclass(LexerBase)
+class Lexer(object):
     def __init__(self, input_text):
         self.input_text = input_text
         self.input_pos = 0
