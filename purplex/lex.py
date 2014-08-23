@@ -1,3 +1,4 @@
+from operator import itemgetter
 import collections
 
 from purplex.exception import NoMatchingTokenFoundError
@@ -6,18 +7,14 @@ from purplex.token import Token
 
 
 class LexerBase(type):
-    @classmethod
-    def __prepare__(metacls, name, bases):
-        return collections.OrderedDict()
 
     def __new__(cls, name, bases, dct):
         ret = super(LexerBase, cls).__new__(cls, name, bases, dct)
-        token_map = collections.OrderedDict()
 
         # Collect all TokenDefs
-        for name, attr in dct.items():
-            if isinstance(attr, TokenDef):
-                token_map[name] = attr
+        tokens = sorted(((name, attr) for name, attr in dct.items()
+                         if isinstance(attr, TokenDef)), key=itemgetter(1))
+        token_map = collections.OrderedDict(tokens)
 
         # Inherit TokenDefs from any base classes
         if hasattr(ret, 'token_map'):
