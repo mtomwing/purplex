@@ -29,4 +29,5 @@ setup(name='purplex',
       packages=['purplex'],
       license='MIT',
       cmdclass={'test': PyTest},
+      install_requires=['six'],
       zip_safe=False)
