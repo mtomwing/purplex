@@ -29,5 +29,11 @@ setup(name='purplex',
       packages=['purplex'],
       license='MIT',
       cmdclass={'test': PyTest},
+      tests_require=[
+          'mock',
+          'pytest',
+          'pytest-cov',
+          'pytest-pep8',
+      ],
       install_requires=['six'],
       zip_safe=False)
