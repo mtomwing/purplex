@@ -32,10 +32,10 @@ class Production(object):
 class DottedRule(object):
     """Represents a "dotted rule" during closure construction."""
 
-    def __init__(self, production, pos, lookahead):
+    def __init__(self, production, pos, lookaheads):
         self.production = production
         self.pos = pos
-        self.lookahead = lookahead
+        self.lookaheads = lookaheads
 
         self.at_end = self.pos == len(self.production.rhs)
 
@@ -44,7 +44,7 @@ class DottedRule(object):
             self.production.lhs,
             ' '.join(self.production.rhs[:self.pos]),
             ' '.join(self.production.rhs[self.pos:]),
-            self.lookahead,
+            self.lookaheads,
         )
 
     def __hash__(self):
@@ -69,11 +69,12 @@ class DottedRule(object):
 
     @property
     def rest(self):
-        return self.production.rhs[self.pos + 1:] + [self.lookahead]
+        for lookahead in self.lookaheads:
+            yield self.production.rhs[self.pos + 1:] + [lookahead]
 
     def move_dot(self):
         """Returns the DottedRule that results from moving the dot."""
-        return self.__class__(self.production, self.pos + 1, self.lookahead)
+        return self.__class__(self.production, self.pos + 1, self.lookaheads)
 
 
 class Grammar(object):
@@ -164,7 +165,7 @@ class Grammar(object):
 
     def initial_closure(self):
         """Computes the initial closure using the START_foo production."""
-        first_rule = DottedRule(self.start, 0, END_OF_INPUT)
+        first_rule = DottedRule(self.start, 0, [END_OF_INPUT])
         return self.closure([first_rule])
 
     def goto(self, rules, symbol):
@@ -203,13 +204,17 @@ class Grammar(object):
 
             symbol = rule.rhs[rule.pos]
             for production in self.nonterminals[symbol]:
-                for first in self.first(rule.rest):
+                firsts = set()
+                for variation in rule.rest:
+                    firsts |= self.first(variation)
+
+                for first in firsts:
                     if EPSILON in production.rhs:
                         # Move immediately to the end if the production
                         # goes to epsilon
-                        new_rule = DottedRule(production, 1, first)
+                        new_rule = DottedRule(production, 1, [first])
                     else:
-                        new_rule = DottedRule(production, 0, first)
+                        new_rule = DottedRule(production, 0, [first])
 
                     if new_rule not in closure:
                         todo.add(new_rule)

@@ -151,41 +151,42 @@ class ParserBase(type):
             label = get_label(closure)
 
             for rule in closure:
-                new_action, lookahead = None, rule.lookahead
+                new_action, lookaheads = None, rule.lookaheads
 
-                if not rule.at_end:
-                    symbol = rule.rhs[rule.pos]
-                    is_terminal = symbol in grammar.terminals
-                    has_goto = symbol in goto[closure]
-                    if is_terminal and has_goto:
-                        next_state = get_label(goto[closure][symbol])
-                        new_action = ('shift', next_state)
-                        lookahead = symbol
-                elif rule.production == grammar.start and rule.at_end:
-                    new_action = ('accept',)
-                elif rule.at_end:
-                    new_action = ('reduce', rule.production)
+                for lookahead in lookaheads:
+                    if not rule.at_end:
+                        symbol = rule.rhs[rule.pos]
+                        is_terminal = symbol in grammar.terminals
+                        has_goto = symbol in goto[closure]
+                        if is_terminal and has_goto:
+                            next_state = get_label(goto[closure][symbol])
+                            new_action = ('shift', next_state)
+                            lookahead = symbol
+                    elif rule.production == grammar.start and rule.at_end:
+                        new_action = ('accept',)
+                    elif rule.at_end:
+                        new_action = ('reduce', rule.production)
 
-                if new_action is None:
-                    continue
+                    if new_action is None:
+                        continue
 
-                prev_action = ACTION.get((label, lookahead))
-                if prev_action is None or prev_action == new_action:
-                    ACTION[label, lookahead] = new_action
-                else:
-                    types = (prev_action[0], new_action[0])
-                    if types == ('shift', 'reduce'):
-                        chosen = resolve_shift_reduce(lookahead,
-                                                      prev_action,
-                                                      new_action)
-                    elif types == ('reduce', 'shift'):
-                        chosen = resolve_shift_reduce(lookahead,
-                                                      new_action,
-                                                      prev_action)
+                    prev_action = ACTION.get((label, lookahead))
+                    if prev_action is None or prev_action == new_action:
+                        ACTION[label, lookahead] = new_action
                     else:
-                        raise TableConflictError(prev_action, new_action)
+                        types = (prev_action[0], new_action[0])
+                        if types == ('shift', 'reduce'):
+                            chosen = resolve_shift_reduce(lookahead,
+                                                          prev_action,
+                                                          new_action)
+                        elif types == ('reduce', 'shift'):
+                            chosen = resolve_shift_reduce(lookahead,
+                                                          new_action,
+                                                          prev_action)
+                        else:
+                            raise TableConflictError(prev_action, new_action)
 
-                    ACTION[label, lookahead] = chosen
+                        ACTION[label, lookahead] = chosen
 
             for symbol in grammar.nonterminals:
                 if symbol in goto[closure]:
