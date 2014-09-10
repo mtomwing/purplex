@@ -159,7 +159,8 @@ class ParserBase(type):
                     has_goto = symbol in goto[closure]
                     if is_terminal and has_goto:
                         next_state = get_label(goto[closure][symbol])
-                        new_action, lookahead = ('shift', next_state), symbol
+                        new_action = ('shift', next_state)
+                        lookahead = symbol
                 elif rule.production == grammar.start and rule.at_end:
                     new_action = ('accept',)
                 elif rule.at_end:

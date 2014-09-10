@@ -37,20 +37,21 @@ class DottedRule(object):
         self.pos = pos
         self.lookahead = lookahead
 
-        self._str = '[{} : {} . {}, {}]'.format(
+        self.at_end = self.pos == len(self.production.rhs)
+
+    def __str__(self):
+        return '<{} : {} . {}, {}>'.format(
             self.production.lhs,
             ' '.join(self.production.rhs[:self.pos]),
             ' '.join(self.production.rhs[self.pos:]),
             self.lookahead,
         )
-        self.at_end = self.pos == len(self.production.rhs)
-        self.rest = self.production.rhs[self.pos + 1:] + [self.lookahead]
 
     def __hash__(self):
-        return hash(self._str)
+        return hash(str(self))
 
     def __repr__(self):
-        return repr(self._str)
+        return repr(str(self))
 
     def __eq__(self, other):
         return self.production == other.production and self.pos == other.pos
@@ -65,6 +66,10 @@ class DottedRule(object):
     @property
     def rhs(self):
         return self.production.rhs
+
+    @property
+    def rest(self):
+        return self.production.rhs[self.pos + 1:] + [self.lookahead]
 
     def move_dot(self):
         """Returns the DottedRule that results from moving the dot."""
