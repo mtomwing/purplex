@@ -118,6 +118,6 @@ $ python example.py
 [coverage-status]: https://coveralls.io/r/mtomwing/purplex "Test coverage"
 [coverage-status-badge]: https://coveralls.io/repos/mtomwing/purplex/badge.png?branch=master
 [pypi-version]: https://crate.io/packages/purplex "Latest version hosted on PyPi"
-[pypi-version-badge]: https://pypip.in/v/purplex/badge.png
+[pypi-version-badge]: https://img.shields.io/pypi/v/purplex.svg
 [pypi-downloads]: https://crate.io/packages/purplex "Number of downloads from PyPi"
-[pypi-downloads-badge]: https://pypip.in/d/purplex/badge.png
+[pypi-downloads-badge]: https://img.shields.io/pypi/dm/purplex.svg
