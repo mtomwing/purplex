@@ -1,8 +1,8 @@
 # purplex
-[![Build Status][build-status-badge]] [build-status]
-[![Coverage Status][coverage-status-badge]] [coverage-status]
-[![PyPi version][pypi-version-badge]] [pypi-version]
-[![PyPi downloads][pypi-downloads-badge]] [pypi-downloads]
+![Build Status][build-status-badge]
+![Coverage Status][coverage-status-badge]
+![PyPi version][pypi-version-badge]
+![PyPi downloads][pypi-downloads-badge]
 
 A pure-Python lexer and parser. Together they provide an experience reminiscent of `yacc` or `bison`, but of course in a more Pythonic way.
 
