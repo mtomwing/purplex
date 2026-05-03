@@ -1,5 +1,5 @@
 coveralls==0.4.1
-pytest==2.5.2
+pytest==9.0.3
 mock==1.0.1
 pytest-cov==1.6
 pytest-pep8==1.0.6
